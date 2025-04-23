@@ -1,5 +1,6 @@
 
 # Remy’s Simple PHP CAPTCHA <img src="https://img.shields.io/static/v1?label=🤖 Website-Telegram Bot&message=Trider Graph 📈&color=ffffff" />
+![CAPTCHA Demo](https://raw.githubusercontent.com/RemyQue/Remy-s-SImple-PHP-CAPTCHA/refs/heads/main/demoImage.png)
 
 This project provides a simple and lightweight CAPTCHA verification system built with PHP. It is designed to protect access to web pages by verifying human users through a dynamically generated CAPTCHA. No Javascript needed.
 
