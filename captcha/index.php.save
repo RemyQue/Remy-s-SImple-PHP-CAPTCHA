@@ -1,0 +1,173 @@
+<?php
+
+use Random\RandomException;
+
+session_start();
+
+// Generate a new CAPTCHA code if it doesn't exist in the session
+if (!isset($_SESSION["captcha_code"])) {
+    try {
+        $_SESSION["captcha_code"] = bin2hex(random_bytes(3)); // Generate CAPTCHA code without forcing uppercase
+    } catch (RandomException $e) {
+        // Handle exception if necessary
+    }
+}
+
+$message = ''; // Initialize message variable
+
+// Check if the form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Handle CAPTCHA submission
+    if (isset($_POST["captcha_code"]) && !empty(trim($_POST["captcha_code"]))) {
+        // Validate the user input directly without converting to uppercase
+        if (trim($_POST["captcha_code"]) === $_SESSION["captcha_code"]) {
+            // Display a success message before redirecting
+            $message = '<p class="text-center text-success">CAPTCHA verified. Redirecting you to VAULTLOCKER...</p>';
+            echo '<meta http-equiv="refresh" content="3;url=../website1/pages/index.php">'; // Redirect after 3 seconds
+            echo $message; // Ensure the message is displayed
+            exit; // Ensure no further code is executed after this
+        } else {
+            $message = '<p class="text-center text-danger">Invalid CAPTCHA. Please try again.</p>';
+            // Regenerate CAPTCHA code on invalid input
+            try {
+                $_SESSION["captcha_code"] = bin2hex(random_bytes(3));
+            } catch (RandomException $e) {
+                // Handle exception if necessary
+            }
+        }
+    } elseif (isset($_POST["captcha_code"])) {
+        $message = '<p class="text-center text-danger">CAPTCHA code cannot be empty. Please try again.</p>';
+    }
+
+    // Check if refresh is requested
+    if (isset($_POST["refresh_captcha"])) {
+        // Regenerate CAPTCHA code
+        try {
+            $_SESSION["captcha_code"] = bin2hex(random_bytes(3));
+        } catch (RandomException $e) {
+            // Handle exception if necessary
+        }
+        $message = '<p class="text-center text-info">CAPTCHA refreshed.</p>'; // Centered message without alert box
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html class="no-js" lang="">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>VAULTCAPTCHA</title>
+    <meta name="description" content="captcha,captcha-generator">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .captcha-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            width: 500px;
+        }
+
+        #show {
+            margin: 0.4rem 0;
+            padding: 0.3rem 0;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .form-horizontal {
+            margin-bottom: 0;
+        }
+
+        .captcha-input {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            border-radius: 5px;
+            width: 100%;
+            height: 60px;
+            margin-right: 10px;
+            max-width: 150px;
+            padding: 10px;
+            font-size: 1.2rem;
+        }
+
+        input[type="text"]::placeholder {
+            color: #737373;
+            opacity: 0.7;
+            font-style: normal;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            width: 70%;
+            margin-left:75px;
+
+        }
+
+        input[type="submit"], .refresh-button {
+            margin-top: 10px;
+            display: inline-block;
+            width: 48%;
+            background-color: #a31600; /* Original background color */
+            color: white; /* Text color */
+            border: none; /* No border */
+            padding: 10px; /* Padding for button */
+            font-size: 1.2rem; /* Font size */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: background-color 0.3s; /* Smooth transition */
+        }
+
+        input[type="submit"]:hover, .refresh-button:hover {
+            background-color: #c42d00; /* Lighter shade on hover for both buttons */
+        }
+
+        img.captcha-header {
+            display: block;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 360px;
+            height: auto;
+        }
+
+        img {
+            height: 70px;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="captcha-container">
+    <img src="capLogo.png" alt="Header Image" class="captcha-header" />
+    <form class="form-horizontal" method="POST" action="">
+        <div class="captcha-input">
+            <label>
+                <input type="text" name="captcha_code" class="form-control" autocomplete="off" placeholder="ENTER CAPTCHA:" />
+            </label>
+            <img src="captcha_gen.php" alt="CAPTCHA Image" />
+0        </div>
+        <div class="button-container">
+            <input type="submit" name='submit' value="SUBMIT" class="btn btn-danger" />
+            <input type="submit" name="refresh_captcha" value="REFRESH" class="btn refresh-button" />
+        </div>
+    </form>
+    <p id="show"><?php if (isset($message)) echo $message; ?></p>
+</div>
+</body>
+</html>
